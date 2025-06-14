@@ -36,15 +36,3 @@ A console-based e-commerce application developed in **Java**, supporting two use
 
 ---
 
-## 📂 Project Structure
-/src
-├── Customer.java
-├── Merchant.java
-├── Product.java
-├── Cart.java
-├── Store.java
-└── Main.java
-/data
-├── customers.txt
-├── merchants.txt
-└── products.txt
