@@ -1,57 +1,19 @@
- class Merchant extends User {
+public class Merchant extends User {
+    private static int countMerchant;
     private Store store;
-    
-    public Merchant(String storeName)
-    {
+    private String merchantId;
 
-        store = new Store(super.name , storeName)
-      
+    public Merchant(String name, String username, String password, String address, String storeName) {
+        super(name, username, password, address); // initialize User part
+        merchantId = String.format("%04d", ++countMerchant); // e.g., 0001, 0002
+        store = new Store(storeName, getName(), merchantId); // getName() from User
     }
-    
-    
-}
-class Product
-{
 
-}
- class Store  {
-    private String storeName;
-    private String ownerName;
-    private ArrayList<Product> productList;
-    
-    public Store(ownerName, storeName)
-    {
-        this.storeName = storeName;
-        this.ownerName = ownerName;
-        productList = new ArrayList<>;
+    public Store getStore() {
+        return store;
     }
-    public void addProduct(String product)
-    {
-        productList.add(product);
-    }
-    public void deleteProduct(String productID)
-    {
-        productList.remove(getProductByid())
-    }
-    public int getProductByid(String pr)
-    public void editProduct(p)
-    
-}
- class Order extends User {
-    private String storeName;
-    private ArrayList<Product> productList;
-    
-    public addProduct(String product)
-    {
-        productList.add(product);
-    }
-    public deleteProduct(String productID)
-    {
-        productList.remove(getProductByid())
-    }
-    
-}
-class Product
-{
 
+    public String getMerchantId() {
+        return merchantId;
+    }
 }
