@@ -27,4 +27,37 @@ public class User {
     public String getAddress() {
         return address;
     }
+
+    public void setAddress(String newAddress) {
+        this.address = newAddress;
+    }
+
+    public boolean register(String name, String username, String password, String address) {
+        this.name = name;
+        this.password = password;
+        this.username = username;
+        this.address = address;
+
+        return true;
+    }
+
+    // maybe logstatus should be global variable.
+    public boolean login (String uname, String pass) {
+        boolean logStatus = (uname.equals(username) && pass.equals(password));
+        return logStatus;
+    }
+
+    public boolean logout () {
+        return false;
+    }
+
+    /*
+    public String toFileString() {
+
+    }
+
+    public void fromFileString (String fileline) {
+    
+    }
+     */
 }
