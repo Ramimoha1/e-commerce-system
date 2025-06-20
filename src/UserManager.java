@@ -1,53 +1,71 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class UserManager {
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
 
-    public UserManager() {
-        users = new ArrayList<>();
-    }
-
+    // Load users from a file
     public void loadFromFile(String filename) {
-        users.clear();
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = br.readLine()) != null) {
-                User u = User.fromFileString(line);
-                if (u != null)
-                    users.add(u);
+                User user = User.fromFileString(line); // Adds valid users to the list
+                if (user != null) users.add(user);
             }
-        } catch (Exception e) {
-            System.out.println("Unable to load users: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error loading user file: " + e.getMessage());
         }
     }
 
+    // Save users to a file
     public void saveToFile(String filename) {
         try (PrintWriter pw = new PrintWriter(new FileWriter(filename))) {
-            for (User u : users) {
-                pw.println(u.toFileString());
+            for (User user : users) {
+                pw.println(user.toFileString());
             }
-        } catch (Exception e) {
-            System.out.println("Unable to save users: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error saving user file: " + e.getMessage());
         }
     }
 
-    // to add new user in the list
+    // Add user only if username is unique
     public void addUser(User user) {
-        users.add(user);
+        if (getUserByUsername(user.getUsername()) == null) {
+            users.add(user);
+            System.out.println("User added successfully.");
+        } else {
+            System.out.println("Username already exists. Choose a different one.");
+        }
     }
 
-    public List<User> getUsers() {
-        return users;
+    // Remove user by username
+    public boolean removeUser(String username) {
+        return users.removeIf(u -> u.getUsername().equals(username));
     }
 
+    // Find a user by username
     public User getUserByUsername(String username) {
         for (User u : users) {
-            if (u.getUsername().equalsIgnoreCase(username)) {
+            if (u.getUsername().equals(username)) {
                 return u;
             }
         }
         return null;
     }
+
+    // Authenticate user credentials
+    public User authenticate(String username, String password) {
+        for (User user : users) {
+            if (user.login(username, password)) {
+                return user;    // Returns the user if credentials match.
+            }
+        }
+        return null;
+    }
+
+    // Optional: Get all users
+    public List<User> getAllUsers() {
+        return users;
+    }
 }
+

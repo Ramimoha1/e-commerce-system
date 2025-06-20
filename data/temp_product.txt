@@ -1,0 +1,2 @@
+P001;Carrot;Carrots are crunchy, sweet root vegetables rich in beta-carotene, fiber, vitamins, and antioxidants. Perfect for snacking, cooking, or juicing, they promote healthy vision and support overall wellness.;2.0;49
+P002;Tomato;Tomatoes are juicy, versatile fruits packed with vitamin C, potassium, and antioxidants like lycopene. Ideal for salads, sauces, and cooking, they add flavor and nutrition to any meal.;1.0;100

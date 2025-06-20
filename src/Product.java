@@ -1,27 +1,33 @@
-import java.io.Serializable;
-
 public class Product {
-    private int id;
+    private String prodID;
     private String prodName;
     private String prodDesc;
     private double prodPrice;
     private int stockQuantity;
 
-    public Product(int id, String prodName, String desc, double prodPrice, int stockQuantity) {
-        this.id = id;
+    // Constructor with validation
+    public Product(String prodID, String prodName, String prodDesc, double prodPrice, int stockQuantity) {
+        if (prodPrice < 0 || stockQuantity < 0) {
+            throw new IllegalArgumentException("Price and stock cannot be negative.");
+        }
+        this.prodID = prodID;
         this.prodName = prodName;
-        this.prodDesc = desc;
+        this.prodDesc = prodDesc;
         this.prodPrice = prodPrice;
         this.stockQuantity = stockQuantity;
     }
 
     // Getters
-    public int getId() {
-        return id;
+    public String getProdID() {
+        return prodID;
     }
 
     public String getProdName() {
         return prodName;
+    }
+
+    public String getProdDesc() {
+        return prodDesc;
     }
 
     public double getProdPrice() {
@@ -31,48 +37,67 @@ public class Product {
     public int getStockQuantity() {
         return stockQuantity;
     }
-    
-    // Setters
-    public void setId(int id) {
-        this.id = id;
+
+    // Setter method with validation
+    public void updateStock(int newStockQuantity) {
+        if (newStockQuantity < 0) {
+            throw new IllegalArgumentException("Stock cannot be negative.");
+        }
+        this.stockQuantity = newStockQuantity;
     }
 
-    public void setProdName(String prodName) {
-        this.prodName = prodName;
+    public void updatePrice(double newPrice) {
+        if (newPrice < 0) {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+        this.prodPrice = newPrice;
     }
 
-    public void setProdPrice(double prodPrice) {
-        this.prodPrice = prodPrice;
-    }
-
-    public void setStockQuantity(int stockQuantity) {
-        this.stockQuantity = stockQuantity;
-    }
-
-    public void updateStock(int newStock){
-        this.stockQuantity = new Stock;
-    }
-
-     public void updatePrice(double newPrice) {
-        this.price = newPrice;
-    }
-
+    // Convert object to a line for saving to file
     public String toFileString() {
-        return productId + ";" + name + ";" + description + ";" + price + ";" + stockQuantity;
+        return prodID + ";" + prodName + ";" + prodDesc + ";" + prodPrice + ";" + stockQuantity;
     }
 
-     public static Product fromFileString(String data) {
-        String[] parts = data.split(";");
-        return new Product(
-            parts[0],
-            parts[1],
-            parts[2],
-            Double.parseDouble(parts[3]),
-            Integer.parseInt(parts[4])
-        );
+    // Create object from a line read from file
+    public static Product fromFileString(String fileLine) {
+        String[] parts = fileLine.split(",");
+        if (parts.length < 5) return null;
+
+        String id = parts[0];
+        String name = parts[1];
+        String desc = parts[2];
+        double price = Double.parseDouble(parts[3]);
+        int stock = Integer.parseInt(parts[4]);
+
+        return new Product(id, name, desc, price, stock);
     }
 
+    public void setProdName(String name) { this.prodName = name; }
+
+    public void setProdDesc(String desc) { this.prodDesc = desc; }
+
+    @Override
     public String toString() {
-        return "[" + productId + "] " + name + " - " + description + " | RM" + price + " | Stock: " + stockQuantity;
+        return "Product ID: " + prodID +
+            "\nName: " + prodName +
+            "\nDescription: " + prodDesc +
+            "\nPrice: RM " + String.format("%.2f", prodPrice) +
+            "\nStock: " + stockQuantity + "\n";
+    }
+
+    // To properly compare Product objects to check for duplicates in a Set or List
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Product other = (Product) obj;
+        return this.prodID != null && this.prodID.equals(other.prodID);
+    }
+
+    @Override
+    public int hashCode() {
+        return prodID != null ? prodID.hashCode() : 0;
     }
 }
+
