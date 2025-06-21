@@ -13,6 +13,7 @@ public class ECommerceSystem {
     private List<User> users;
     private List<Product> products;
     private User currentUser;
+    public Scanner sc;
 
     public ECommerceSystem() {
         users = new ArrayList<>();
@@ -20,6 +21,7 @@ public class ECommerceSystem {
         currentUser = null;
         loadUsersFromFile();
         loadProductsFromFile();
+        sc = new Scanner(System.in);
     }
 
     private void loadUsersFromFile() {
@@ -69,17 +71,67 @@ public class ECommerceSystem {
     }
 
     public void startSystem() {
+        clearTerminal();
         System.out.println("Welcome to the E-Commerce System");
         mainMenu();
     }
 
     public void shutdownSystem() {
+        clearTerminal();
         System.out.println("System shutting down. Goodbye!");
+    }
+    
+    public void clearTerminal()
+    {
+        try {
+            String os = System.getProperty("os.name").toLowerCase();
+            if (os.contains("windows")) {
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                new ProcessBuilder("clear").inheritIO().start().waitFor();
+            }
+        } catch (Exception e) {
+            for (int i = 0; i < 50; i++) {
+                System.out.println();
+            }
+        }
+    }
+    
+    public void registerMenu()
+    {
+        clearTerminal();
+        System.out.print("Enter role (customer/merchant): ");
+        String role = sc.nextLine();
+        if (registerUser(role)) {
+            System.out.println("Registration successful!");
+        } else {
+            System.out.println("\nTo try again press 1 else 2"); 
+            System.out.print("Choice: ");  
+            int choice = sc.nextInt();
+            sc.nextLine();
+            while(choice != 1 && choice != 2)
+            {
+                System.out.println("Invalid choice! Please enter 1 or 2");
+                System.out.println("To try again press 1 else 2"); 
+                System.out.print("Choice: ");  
+                choice = sc.nextInt();
+                sc.nextLine();
+            }
+            
+            if(choice == 1)
+            {
+                registerMenu();
+            }
+            else
+            {
+                mainMenu();
+            }
+        }
     }
 
     public void mainMenu() {
-        Scanner sc = new Scanner(System.in);
         while (true) {
+            clearTerminal();
             System.out.println("\n--- Main Menu ---");
             System.out.println("1. Register");
             System.out.println("2. Login");
@@ -89,16 +141,17 @@ public class ECommerceSystem {
             System.out.print("Enter choice: ");
             int choice = sc.nextInt();
             sc.nextLine();
-
+            while(choice < 1 || choice > 4)
+            {
+                System.err.println("Invalid choice! Please enter a value from 1 to 4");
+                System.out.print("Enter choice: ");
+                choice = sc.nextInt();
+                sc.nextLine();
+            }
+            
             switch (choice) {
-                case 1:
-                    System.out.print("Enter role (customer/merchant): ");
-                    String role = sc.nextLine();
-                    if (registerUser(role)) {
-                        System.out.println("Registration successful!");
-                    } else {
-                        System.out.println("Registration failed.");
-                    }
+                case 1: 
+                    registerMenu();
                     break;
                 case 2:
                     loginMenu();
@@ -109,14 +162,12 @@ public class ECommerceSystem {
                 case 4:
                     shutdownSystem();
                     return;
-                default:
-                    System.out.println("Invalid choice.");
             }
         }
     }
 
     public void loginMenu() {
-        Scanner sc = new Scanner(System.in);
+        clearTerminal();
         System.out.print("Enter username: ");
         String uname = sc.nextLine();
         Console console = System.console();
@@ -133,6 +184,7 @@ public class ECommerceSystem {
         for (User user : users) {
             if (user.login(uname, pass)) {
                 currentUser = user;
+                clearTerminal();
                 System.out.println("Login successful. Welcome " + currentUser.getUsername() + "!");
                 if (currentUser instanceof Customer) {
                     customerMenu((Customer) currentUser);
@@ -142,13 +194,32 @@ public class ECommerceSystem {
                 return;
             }
         }
+        
         System.out.println("Login failed. Invalid credentials.");
+        System.out.println("To try again press 1 else 2"); 
+        System.out.print("Choice: ");  
+        int choice = sc.nextInt();
+        sc.nextLine();
+        while(choice != 1 && choice != 2)
+        {
+            System.out.println("Invalid choice! Please enter 1 or 2");
+            System.out.println("To try again press 1 else 2"); 
+            System.out.print("Choice: ");  
+            choice = sc.nextInt();
+            sc.nextLine();
+        }
+        
+        if(choice == 1)
+        {
+            loginMenu();
+        }
+        else
+        {
+            mainMenu();
+        }
     }
 
     public boolean registerUser(String role) {
-        Scanner sc = new Scanner(System.in);
-
-        // validate role first
         if (!role.equalsIgnoreCase("customer") && !role.equalsIgnoreCase("merchant")) {
             System.out.println("Invalid role. Only 'customer' or 'merchant' roles are allowed.");
             return false;
@@ -157,7 +228,6 @@ public class ECommerceSystem {
         System.out.print("Enter username: ");
         String uname = sc.nextLine();
 
-        // vheck for duplicate username
         if (isUsernameTakenInFile(uname)) {
             System.out.println("Username already exists in file. Please choose a different username.");
             return false;
@@ -209,7 +279,7 @@ public class ECommerceSystem {
     }
 
     private void forgotPassword() {
-        Scanner sc = new Scanner(System.in);
+        clearTerminal();
         System.out.print("Enter your username: ");
         String uname = sc.nextLine();
 
@@ -233,10 +303,14 @@ public class ECommerceSystem {
             }
 
             user.setPassword(newPass); 
-            updateUsersFile(); // Save updated list to file
+            updateUsersFile();
             System.out.println("Password reset successful.");
+            System.out.println("Press any key to continue...");
+            sc.nextLine();
         } else {
             System.out.println("User not found.");
+            System.out.println("Press any key to continue...");
+            sc.nextLine();
         }
     }
 
@@ -250,11 +324,9 @@ public class ECommerceSystem {
                 }
             }
         } catch (FileNotFoundException e) {
-            // If the file doesn't exist yet, assume no users
         }
-        return false; // Username is unique
+        return false;
     }
-
 
     private void updateUsersFile() {
         try (PrintWriter pw = new PrintWriter(new FileWriter("../data/user.txt"))) {
@@ -267,117 +339,38 @@ public class ECommerceSystem {
     }
     
     public void customerMenu(Customer customer) {
-        Scanner sc = new Scanner(System.in);
         while (true) {
+            clearTerminal();
             System.out.println("\n--- Customer Menu ---");
             System.out.println("1. Browse products");
-            System.out.println("2. Add product to cart");
-            System.out.println("3. Update product quantity in cart");
-            System.out.println("4. Remove product from cart");
-            System.out.println("5. View cart");
-            System.out.println("6. Checkout");
-            System.out.println("7. Update delivery address");
-            System.out.println("8. Logout");
+            System.out.println("2. Manage cart");
+            System.out.println("3. Checkout");
+            System.out.println("4. Update delivery address");
+            System.out.println("5. Logout");
             System.out.print("Choice: ");
             int choice = sc.nextInt();
             sc.nextLine();
+            
+            while(choice < 1 || choice > 5)
+            {
+                System.err.println("Invalid choice! Please enter a value from 1 to 5");
+                System.out.print("Choice: ");
+                choice = sc.nextInt();
+                sc.nextLine();
+            }
 
             switch (choice) {
                 case 1:
+                    clearTerminal();
                     browseProducts();
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
                 case 2:
-                    browseProducts();
-                    System.out.print("Enter Product ID: ");
-                    String pid = sc.nextLine();
-                    Product p = findProductById(pid);  // make sure this loads from file
-
-                    if (p != null) {
-                        System.out.print("Enter quantity: ");
-                        int qty = sc.nextInt();
-                        sc.nextLine();
-
-                        if (qty <= p.getStockQuantity()) {
-                            customer.addToCart(p, qty);
-                            int newStock = p.getStockQuantity() - qty;
-                            p.updateStock(newStock);  // update in object
-
-                            updateProductStock(pid, newStock); // update in file
-
-                            System.out.println("Added to cart.");
-                        } else {
-                            System.out.println("Not enough stock available.");
-                        }
-                    } else {
-                        System.out.println("Product not found.");
-                    }
+                    manageCartMenu(customer);
                     break;
                 case 3:
-                    System.out.println("\n--- Items in Cart ---");
-                    if (customer.getCart().isEmpty()) {
-                        System.out.println("Your cart is empty.");
-                        break;
-                    }
-
-                    customer.viewItems();
-
-                    System.out.print("Enter Product ID to update quantity: ");
-                    String pidU = sc.nextLine();
-
-                    Product pU = findProductById(pidU); // This should read from product.txt
-
-                    if (pU != null && customer.getCart().contains(pU)) {
-                        System.out.print("Enter new quantity: ");
-                        int newQty = sc.nextInt();
-                        sc.nextLine();
-
-                        int currentQtyInCart = customer.getCart().getQuantityForProduct(pU);
-                        int availableStock = pU.getStockQuantity() + currentQtyInCart;
-
-                        if (newQty <= availableStock) {
-                            int stockAdjustment = newQty - currentQtyInCart;
-
-                            // Update stock before updating cart
-                            pU.updateStock(pU.getStockQuantity() - stockAdjustment);
-
-                            // Update cart
-                            customer.updateCartItem(pU, newQty);
-
-                            // Update stock in file
-                            updateProductStock(pU.getProdID(), pU.getStockQuantity());
-
-                            System.out.println("Cart updated.");
-                        } else {
-                            System.out.println("Not enough stock available.");
-                        }
-                    } else {
-                        System.out.println("Product not found in cart.");
-                    }
-                    break;
-                case 4:
-                    System.out.println("\n--- Items in Cart ---");
-                    if (customer.getCart().isEmpty()) {
-                        System.out.println("Your cart is empty.");
-                        break;
-                    }
-
-                    customer.viewItems();
-
-                    System.out.print("Enter Product ID to remove: ");
-                    String pidR = sc.nextLine();
-                    Product pR = findProductById(pidR);
-                    if (pR != null) {
-                        customer.removeFromCart(pR);
-                        System.out.println("Item removed.");
-                    } else {
-                        System.out.println("Product not found.");
-                    }
-                    break;
-                case 5:
-                    System.out.println("--- Cart ---");
-                    customer.viewItems();
-                    break;
-                case 6:
+                    clearTerminal();
                     System.out.println("\n--- Order Summary ---");
                     System.out.println("Customer: " + customer.getName());
                     System.out.println("Delivery Address: " + customer.getAddress());
@@ -406,27 +399,162 @@ public class ECommerceSystem {
                     saveOrderToFile(orderDetails.toString());
                     System.out.println("Order placed! Thank you.");
                     customer.getCart().clear();
-
+                    
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
-                case 7:
+                case 4:
+                    clearTerminal();
                     System.out.print("Enter new address: ");
                     String newAddr = sc.nextLine();
                     customer.updateAddress(newAddr);
                     System.out.println("Address updated.");
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
-                case 8:
+                case 5:
                     currentUser.logout();
                     currentUser = null;
                     return;
-                default:
-                    System.out.println("Invalid choice.");
+            }
+        }
+    }
+
+    public void manageCartMenu(Customer customer) {
+        while (true) {
+            clearTerminal();
+            System.out.println("\n--- Manage Cart ---");
+            System.out.println("1. Add product to cart");
+            System.out.println("2. Update product quantity in cart");
+            System.out.println("3. Remove product from cart");
+            System.out.println("4. View cart");
+            System.out.println("5. Back to customer menu");
+            System.out.print("Choice: ");
+            int choice = sc.nextInt();
+            sc.nextLine();
+            
+            while(choice < 1 || choice > 5)
+            {
+                System.err.println("Invalid choice! Please enter a value from 1 to 5");
+                System.out.print("Choice: ");
+                choice = sc.nextInt();
+                sc.nextLine();
+            }
+
+            switch (choice) {
+                case 1:
+                    clearTerminal();
+                    browseProducts();
+                    System.out.print("Enter Product ID: ");
+                    String pid = sc.nextLine();
+                    Product p = findProductById(pid);
+
+                    if (p != null) {
+                        System.out.print("Enter quantity: ");
+                        int qty = sc.nextInt();
+                        sc.nextLine();
+
+                        if (qty <= p.getStockQuantity()) {
+                            customer.addToCart(p, qty);
+                            int newStock = p.getStockQuantity() - qty;
+                            p.updateStock(newStock);
+
+                            updateProductStock(pid, newStock);
+
+                            System.out.println("Added to cart.");
+                        } else {
+                            System.out.println("Not enough stock available.");
+                        }
+                    } else {
+                        System.out.println("Product not found.");
+                    }
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
+                    break;
+                case 2:
+                    clearTerminal();
+                    System.out.println("\n--- Items in Cart ---");
+                    if (customer.getCart().isEmpty()) {
+                        System.out.println("Your cart is empty.");
+                        System.out.println("Press any key to continue...");
+                        sc.nextLine();
+                        break;
+                    }
+
+                    customer.viewItems();
+
+                    System.out.print("Enter Product ID to update quantity: ");
+                    String pidU = sc.nextLine();
+
+                    Product pU = findProductById(pidU);
+
+                    if (pU != null && customer.getCart().contains(pU)) {
+                        System.out.print("Enter new quantity: ");
+                        int newQty = sc.nextInt();
+                        sc.nextLine();
+
+                        int currentQtyInCart = customer.getCart().getQuantityForProduct(pU);
+                        int availableStock = pU.getStockQuantity() + currentQtyInCart;
+
+                        if (newQty <= availableStock) {
+                            int stockAdjustment = newQty - currentQtyInCart;
+
+                            pU.updateStock(pU.getStockQuantity() - stockAdjustment);
+
+                            customer.updateCartItem(pU, newQty);
+
+                            updateProductStock(pU.getProdID(), pU.getStockQuantity());
+
+                            System.out.println("Cart updated.");
+                        } else {
+                            System.out.println("Not enough stock available.");
+                        }
+                    } else {
+                        System.out.println("Product not found in cart.");
+                    }
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
+                    break;
+                case 3:
+                    clearTerminal();
+                    System.out.println("\n--- Items in Cart ---");
+                    if (customer.getCart().isEmpty()) {
+                        System.out.println("Your cart is empty.");
+                        System.out.println("Press any key to continue...");
+                        sc.nextLine();
+                        break;
+                    }
+
+                    customer.viewItems();
+
+                    System.out.print("Enter Product ID to remove: ");
+                    String pidR = sc.nextLine();
+                    Product pR = findProductById(pidR);
+                    if (pR != null) {
+                        customer.removeFromCart(pR);
+                        System.out.println("Item removed.");
+                    } else {
+                        System.out.println("Product not found.");
+                    }
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
+                    break;
+                case 4:
+                    clearTerminal();
+                    System.out.println("--- Cart ---");
+                    customer.viewItems();
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
+                    break;
+                case 5:
+                    return; // Return to customer menu
             }
         }
     }
 
     public void merchantMenu(Merchant merchant) {
-        Scanner sc = new Scanner(System.in);
         while (true) {
+            clearTerminal();
             System.out.println("\n--- Merchant Menu ---");
             System.out.println("1. Add new product");
             System.out.println("2. View all products");
@@ -436,9 +564,18 @@ public class ECommerceSystem {
             System.out.print("Choice: ");
             int choice = sc.nextInt();
             sc.nextLine();
+            
+            while(choice < 1 || choice > 5)
+            {
+                System.err.println("Invalid choice! Please enter a value from 1 to 5");
+                System.out.print("Choice: ");
+                choice = sc.nextInt();
+                sc.nextLine();
+            }
 
             switch (choice) {
                 case 1:
+                    clearTerminal();
                     System.out.print("Enter product ID: ");
                     String id = sc.nextLine();
                     System.out.print("Name: ");
@@ -457,27 +594,37 @@ public class ECommerceSystem {
                     } else {
                         System.out.println("Failed to add product due to duplication.");
                     }
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
                 case 2:
+                    clearTerminal();
                     browseProducts();
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
                 case 3:
+                    clearTerminal();
+                    browseProducts();
                     System.out.print("Enter Product ID to delete: ");
                     String delId = sc.nextLine();
                     merchant.deleteProduct(delId);
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
                 case 4:
+                    clearTerminal();
                     System.out.print("Enter new store address: ");
                     String newAddr = sc.nextLine();
                     merchant.setAddress(newAddr);
                     System.out.println("Address updated.");
+                    System.out.println("Press any key to continue...");
+                    sc.nextLine();
                     break;
                 case 5:
                     currentUser.logout();
                     currentUser = null;
                     return;
-                default:
-                    System.out.println("Invalid choice.");
             }
         }
     }
@@ -541,7 +688,7 @@ public class ECommerceSystem {
             System.out.println("Error reading product file: " + e.getMessage());
         }
 
-        return null; // If not found
+        return null;
     }
 
     public void updateProductStock(String productId, int newStock) {
@@ -568,12 +715,10 @@ public class ECommerceSystem {
                 }
             }
 
-            System.out.println("Stock updated successfully.");
         } catch (IOException e) {
             System.out.println("Error updating product stock: " + e.getMessage());
         }
     }
-
 
     public static void main(String[] args) {
         ECommerceSystem system = new ECommerceSystem();
