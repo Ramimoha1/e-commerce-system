@@ -7,6 +7,13 @@ public class Customer extends User {    // Inheritance
         this.cart = new ShoppingCart();
     }
 
+    // Polymorphism
+    @Override
+    public void viewDashboard() {
+        System.out.println("Welcome, Customer " + name);
+        viewItems();
+    }
+
     // View all items in the cart
     public void viewItems() {
         cart.viewCart();

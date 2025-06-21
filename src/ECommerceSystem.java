@@ -1,7 +1,10 @@
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import java.io.File;
@@ -104,6 +107,7 @@ public class ECommerceSystem {
     public void registerMenu()
     {
         clearTerminal();
+        System.out.println("\n--- Register ---");
         System.out.print("Enter role (customer/merchant): ");
         String role = sc.nextLine();
         if (registerUser(role)) {
@@ -172,6 +176,7 @@ public class ECommerceSystem {
 
     public void loginMenu() {
         clearTerminal();
+        System.out.println("\n--- Log In ---");
         System.out.print("Enter username: ");
         String uname = sc.nextLine();
         Console console = System.console();
@@ -183,6 +188,7 @@ public class ECommerceSystem {
             // Fallback if console is not available (e.g. IDEs)
             System.out.print("Enter password: ");
             sc.nextLine();
+            sc.nextLine();
             pass = sc.nextLine();
         }
 
@@ -190,7 +196,7 @@ public class ECommerceSystem {
             if (user.login(uname, pass)) {
                 currentUser = user;
                 clearTerminal();
-                System.out.println("Login successful. Welcome " + currentUser.getUsername() + "!");
+                currentUser.viewDashboard();
                 if (currentUser instanceof Customer) {
                     customerMenu((Customer) currentUser);
                 } else if (currentUser instanceof Merchant) {
@@ -285,6 +291,7 @@ public class ECommerceSystem {
 
     private void forgotPassword() {
         clearTerminal();
+        System.out.println("\n--- Change Password ---");
         System.out.print("Enter your username: ");
         String uname = sc.nextLine();
 

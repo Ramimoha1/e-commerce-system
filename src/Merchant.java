@@ -11,6 +11,13 @@ public class Merchant extends User {    // Inheritance
         this.storeName = "Default Store";
     }
 
+    // Polymorphism
+    @Override
+    public void viewDashboard() {
+        System.out.println("Welcome, Merchant " + name);
+        viewInventory();
+    }
+
     public boolean addProduct(Product product) {
         if (product == null || product.getProdID() == null || product.getProdID().trim().isEmpty()) {
             System.out.println("Cannot add product: invalid product.");
@@ -19,7 +26,7 @@ public class Merchant extends User {    // Inheritance
 
         String newProdID = product.getProdID().trim();
 
-        File file = new File("product.txt");
+        File file = new File("../data/product.txt");
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -45,7 +52,7 @@ public class Merchant extends User {    // Inheritance
     }
 
     public void deleteProduct(String productId) {
-        File inputFile = new File("product.txt");
+        File inputFile = new File("../data/product.txt");
         List<String> updatedLines = new ArrayList<>();
         boolean found = false;
 
@@ -116,3 +123,4 @@ public class Merchant extends User {    // Inheritance
         this.storeName = newStoreName;
     }
 }
+

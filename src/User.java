@@ -74,6 +74,8 @@ public abstract class User {
         return null; // Unknown role
     }
 
+    public abstract void viewDashboard();   // Polymorphism
+
     public String getUsername() {
         return username;
     }
@@ -90,6 +92,10 @@ public abstract class User {
         return address;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+    
     public void setAddress(String address) {
         this.address = address;
     }
@@ -98,3 +104,4 @@ public abstract class User {
         this.password = newPassword;
     }
 }
+
