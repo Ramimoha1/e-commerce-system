@@ -1,13 +1,12 @@
+import java.io.BufferedReader;
 import java.io.Console;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
-import java.io.IOException;
 
 public class ECommerceSystem {
     private List<User> users;
@@ -100,6 +99,7 @@ public class ECommerceSystem {
     public void registerMenu()
     {
         clearTerminal();
+        System.out.println("\n--- Register ---");
         System.out.print("Enter role (customer/merchant): ");
         String role = sc.nextLine();
         if (registerUser(role)) {
@@ -168,6 +168,7 @@ public class ECommerceSystem {
 
     public void loginMenu() {
         clearTerminal();
+        System.out.println("\n--- Log In ---");
         System.out.print("Enter username: ");
         String uname = sc.nextLine();
         Console console = System.console();
@@ -178,6 +179,7 @@ public class ECommerceSystem {
         } else {
             // Fallback if console is not available (e.g. IDEs)
             System.out.print("Enter password: ");
+            sc.nextLine();
             pass = sc.nextLine();
         }
 
@@ -185,7 +187,7 @@ public class ECommerceSystem {
             if (user.login(uname, pass)) {
                 currentUser = user;
                 clearTerminal();
-                System.out.println("Login successful. Welcome " + currentUser.getUsername() + "!");
+                currentUser.viewDashboard();
                 if (currentUser instanceof Customer) {
                     customerMenu((Customer) currentUser);
                 } else if (currentUser instanceof Merchant) {
@@ -280,6 +282,7 @@ public class ECommerceSystem {
 
     private void forgotPassword() {
         clearTerminal();
+        System.out.println("\n--- Change Password ---");
         System.out.print("Enter your username: ");
         String uname = sc.nextLine();
 
@@ -405,6 +408,7 @@ public class ECommerceSystem {
                     break;
                 case 4:
                     clearTerminal();
+                    System.out.println("--- Update delivery address ---");
                     System.out.print("Enter new address: ");
                     String newAddr = sc.nextLine();
                     customer.updateAddress(newAddr);
@@ -576,6 +580,7 @@ public class ECommerceSystem {
             switch (choice) {
                 case 1:
                     clearTerminal();
+                    System.out.println("\n--- Add New Product ---");
                     System.out.print("Enter product ID: ");
                     String id = sc.nextLine();
                     System.out.print("Name: ");
@@ -614,6 +619,7 @@ public class ECommerceSystem {
                     break;
                 case 4:
                     clearTerminal();
+                     System.out.println("\n--- Update Store Address ---");
                     System.out.print("Enter new store address: ");
                     String newAddr = sc.nextLine();
                     merchant.setAddress(newAddr);
