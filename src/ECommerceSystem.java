@@ -7,12 +7,16 @@ import java.util.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 public class ECommerceSystem {
     private List<User> users;
     private List<Product> products;
+    private List<Product> orders;
     private User currentUser;
+
     public Scanner sc;
 
     public ECommerceSystem() {
@@ -178,6 +182,7 @@ public class ECommerceSystem {
         } else {
             // Fallback if console is not available (e.g. IDEs)
             System.out.print("Enter password: ");
+            sc.nextLine();
             pass = sc.nextLine();
         }
 
@@ -338,87 +343,164 @@ public class ECommerceSystem {
         }
     }
     
-    public void customerMenu(Customer customer) {
-        while (true) {
-            clearTerminal();
-            System.out.println("\n--- Customer Menu ---");
-            System.out.println("1. Browse products");
-            System.out.println("2. Manage cart");
-            System.out.println("3. Checkout");
-            System.out.println("4. Update delivery address");
-            System.out.println("5. Logout");
+   public void customerMenu(Customer customer) {
+    while (true) {
+        clearTerminal();
+        System.out.println("\n--- Customer Menu ---");
+        System.out.println("1. Browse products");
+        System.out.println("2. Manage cart");
+        System.out.println("3. Checkout");
+        System.out.println("4. View Current Orders");
+        System.out.println("5. Update delivery address");
+        System.out.println("6. Logout");
+        System.out.print("Choice: ");
+        int choice = sc.nextInt();
+        sc.nextLine();
+        
+        while(choice < 1 || choice > 6) {
+            System.err.println("Invalid choice! Please enter a value from 1 to 6");
             System.out.print("Choice: ");
-            int choice = sc.nextInt();
+            choice = sc.nextInt();
             sc.nextLine();
-            
-            while(choice < 1 || choice > 5)
-            {
-                System.err.println("Invalid choice! Please enter a value from 1 to 5");
-                System.out.print("Choice: ");
-                choice = sc.nextInt();
+        }
+
+        switch (choice) {
+            case 1:
+                clearTerminal();
+                browseProducts();
+                System.out.println("Press any key to continue...");
                 sc.nextLine();
-            }
-
-            switch (choice) {
-                case 1:
-                    clearTerminal();
-                    browseProducts();
+                break;
+            case 2:
+                manageCartMenu(customer);
+                break;
+            case 3:
+                clearTerminal();
+                if (customer.getCart().getItems().length == 0) {
+                    System.out.println("Your cart is empty. Please add some items first.");
                     System.out.println("Press any key to continue...");
                     sc.nextLine();
                     break;
-                case 2:
-                    manageCartMenu(customer);
-                    break;
-                case 3:
-                    clearTerminal();
-                    System.out.println("\n--- Order Summary ---");
-                    System.out.println("Customer: " + customer.getName());
-                    System.out.println("Delivery Address: " + customer.getAddress());
-                    System.out.println("\nItems:");
+                }
+                
+                System.out.println("\n--- Order Summary ---");
+                System.out.println("Time: " + LocalDateTime.now());
+                System.out.println("Customer: " + customer.getName());
+                System.out.println("Delivery Address: " + customer.getAddress());
+                System.out.println("\nItems:");
+                
+                CartItem[] items = customer.getCart().getItems();
+                double total = 0.0;
 
-                    CartItem[] items = customer.getCart().getItems();
-                    double total = 0.0;
+                // Create new order
+                Order newOrder = new Order(Order.getNextOrderId(), customer);
 
-                    StringBuilder orderDetails = new StringBuilder();
-                    orderDetails.append("Customer: ").append(customer.getName()).append("\n");
-                    orderDetails.append("Address: ").append(customer.getAddress()).append("\n");
-                    orderDetails.append("Items:\n");
+                StringBuilder orderDetails = new StringBuilder();
+                orderDetails.append("Customer: ").append(customer.getName()).append("\n");
+                orderDetails.append("Address: ").append(customer.getAddress()).append("\n");
+                orderDetails.append("Order ID: ").append(newOrder.getOrderId()).append("\n");
+                orderDetails.append("Items:\n");
 
-                    for (CartItem item : items) {
-                        double itemTotal = item.getProduct().getProdPrice() * item.getItemQuantity();
-                        total += itemTotal;
-                        String line = item.getProduct().getProdName() + " (x" + item.getItemQuantity() + ") - RM " + String.format("%.2f", itemTotal);
-                        System.out.println(line);
-                        orderDetails.append(line).append("\n");
-                    }
+                for (CartItem item : items) {
+                    double itemTotal = item.getProduct().getProdPrice() * item.getItemQuantity();
+                    total += itemTotal;
+                    String line = item.getProduct().getProdName() + " (x" + item.getItemQuantity() + ") - RM " + String.format("%.2f", itemTotal);
+                    System.out.println(line);
+                    orderDetails.append(line).append("\n");
+                }
 
-                    System.out.println("Total: RM " + String.format("%.2f", total));
-                    orderDetails.append("Total: RM ").append(String.format("%.2f", total)).append("\n");
-                    orderDetails.append("----\n");
+                System.out.println("Total: RM " + String.format("%.2f", total));
+                orderDetails.append("Total: RM ").append(String.format("%.2f", total)).append("\n");
+                orderDetails.append("Date: ").append(LocalDateTime.now()).append("\n");
+                orderDetails.append("Status: ").append(newOrder.getStatus()).append("\n");
+                orderDetails.append("----\n");
 
+                // Confirm order
+                System.out.print("Confirm order? (y/n): ");
+                String confirm = sc.nextLine();
+                if (confirm.toLowerCase().startsWith("y")) {
                     saveOrderToFile(orderDetails.toString());
-                    System.out.println("Order placed! Thank you.");
+                    saveOrderToDatabase(newOrder);
+                    System.out.println("Order placed! Order ID: " + newOrder.getOrderId());
                     customer.getCart().clear();
-                    
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 4:
-                    clearTerminal();
-                    System.out.print("Enter new address: ");
-                    String newAddr = sc.nextLine();
-                    customer.updateAddress(newAddr);
-                    System.out.println("Address updated.");
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 5:
-                    currentUser.logout();
-                    currentUser = null;
-                    return;
-            }
+                } else {
+                    System.out.println("Order cancelled.");
+                }
+                
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 4:
+                clearTerminal();
+                viewCustomerOrders(customer);
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 5:
+                clearTerminal();
+                System.out.print("Enter new address: ");
+                String newAddr = sc.nextLine();
+                customer.updateAddress(newAddr);
+                System.out.println("Address updated.");
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 6:
+                currentUser.logout();
+                currentUser = null;
+                return;
         }
     }
+}
+
+// Helper method to view customer's orders
+private void viewCustomerOrders(Customer customer) {
+    try {
+        File file = new File("../data/Order.txt");
+        if (!file.exists()) {
+            System.out.println("No orders found.");
+            return;
+        }
+        
+        boolean foundOrders = false;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            System.out.println("\n--- Your Orders ---");
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 5 && parts[1].equals(customer.getName())) {
+                    foundOrders = true;
+                    System.out.println("Order ID: " + parts[0]);
+                    System.out.println("Total: RM " + String.format("%.2f", Double.parseDouble(parts[2])));
+                    System.out.println("Date: " + parts[3]);
+                    System.out.println("Status: " + parts[4]);
+                    System.out.println("----");
+                }
+            }
+        }
+        
+        if (!foundOrders) {
+            System.out.println("You have no orders yet.");
+        }
+    } catch (IOException e) {
+        System.err.println("Error reading orders: " + e.getMessage());
+    }
+}
+
+// Helper method to save order to database
+private void saveOrderToDatabase(Order order) {
+    try {
+        File file = new File("../data/Order.txt");
+        file.getParentFile().mkdirs(); // Create directory if it doesn't exist
+        
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+            writer.write(order.toFileString());
+            writer.newLine();
+        }
+    } catch (IOException e) {
+        System.err.println("Error saving order to database: " + e.getMessage());
+    }
+}
 
     public void manageCartMenu(Customer customer) {
         while (true) {
@@ -552,83 +634,250 @@ public class ECommerceSystem {
         }
     }
 
-    public void merchantMenu(Merchant merchant) {
-        while (true) {
-            clearTerminal();
-            System.out.println("\n--- Merchant Menu ---");
-            System.out.println("1. Add new product");
-            System.out.println("2. View all products");
-            System.out.println("3. Delete product");
-            System.out.println("4. Update store address");
-            System.out.println("5. Logout");
+   public void merchantMenu(Merchant merchant) {
+    while (true) {
+        clearTerminal();
+        System.out.println("\n--- Merchant Menu ---");
+        System.out.println("1. Add new product");
+        System.out.println("2. View all products");
+        System.out.println("3. Delete product");
+        System.out.println("4. View Orders");
+        System.out.println("5. Update Orders");
+        System.out.println("6. Update store address");
+        System.out.println("7. Logout");
+        System.out.print("Choice: ");
+        int choice = sc.nextInt();
+        sc.nextLine();
+        
+        while(choice < 1 || choice > 7) {
+            System.err.println("Invalid choice! Please enter a value from 1 to 7");
             System.out.print("Choice: ");
-            int choice = sc.nextInt();
+            choice = sc.nextInt();
             sc.nextLine();
-            
-            while(choice < 1 || choice > 5)
-            {
-                System.err.println("Invalid choice! Please enter a value from 1 to 5");
-                System.out.print("Choice: ");
-                choice = sc.nextInt();
-                sc.nextLine();
-            }
+        }
 
-            switch (choice) {
-                case 1:
-                    clearTerminal();
-                    System.out.print("Enter product ID: ");
-                    String id = sc.nextLine();
-                    System.out.print("Name: ");
-                    String name = sc.nextLine();
-                    System.out.print("Description: ");
-                    String desc = sc.nextLine();
-                    System.out.print("Price: ");
-                    double price = sc.nextDouble();
-                    System.out.print("Stock: ");
-                    int stock = sc.nextInt();
-                    sc.nextLine();
-                    Product newProd = new Product(id, name, desc, price, stock);
-                    if (merchant.addProduct(newProd)) {
-                        saveProductToFile(newProd);
-                        System.out.println("Product added.");
-                    } else {
-                        System.out.println("Failed to add product due to duplication.");
-                    }
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 2:
-                    clearTerminal();
-                    browseProducts();
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 3:
-                    clearTerminal();
-                    browseProducts();
-                    System.out.print("Enter Product ID to delete: ");
-                    String delId = sc.nextLine();
-                    merchant.deleteProduct(delId);
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 4:
-                    clearTerminal();
-                    System.out.print("Enter new store address: ");
-                    String newAddr = sc.nextLine();
-                    merchant.setAddress(newAddr);
-                    System.out.println("Address updated.");
-                    System.out.println("Press any key to continue...");
-                    sc.nextLine();
-                    break;
-                case 5:
-                    currentUser.logout();
-                    currentUser = null;
-                    return;
-            }
+        switch (choice) {
+            case 1:
+                clearTerminal();
+                System.out.print("Enter product ID: ");
+                String id = sc.nextLine();
+                System.out.print("Name: ");
+                String name = sc.nextLine();
+                System.out.print("Description: ");
+                String desc = sc.nextLine();
+                System.out.print("Price: ");
+                double price = sc.nextDouble();
+                System.out.print("Stock: ");
+                int stock = sc.nextInt();
+                sc.nextLine();
+                Product newProd = new Product(id, name, desc, price, stock);
+                if (merchant.addProduct(newProd)) {
+                    saveProductToFile(newProd);
+                    System.out.println("Product added.");
+                } else {
+                    System.out.println("Failed to add product due to duplication.");
+                }
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 2:
+                clearTerminal();
+                browseProducts();
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 3:
+                clearTerminal();
+                browseProducts();
+                System.out.print("Enter Product ID to delete: ");
+                String delId = sc.nextLine();
+                merchant.deleteProduct(delId);
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 4:
+                clearTerminal();
+                displayAllOrders();
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 5:
+                clearTerminal();
+                manageOrderStatus();
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 6:
+                clearTerminal();
+                System.out.print("Enter new store address: ");
+                String newAddr = sc.nextLine();
+                merchant.setAddress(newAddr);
+                System.out.println("Address updated.");
+                System.out.println("Press any key to continue...");
+                sc.nextLine();
+                break;
+            case 7:
+                currentUser.logout();
+                currentUser = null;
+                return;
         }
     }
+}
 
+// Method to display all orders
+private void displayAllOrders() {
+    try {
+        File file = new File("../data/Order.txt");
+        if (!file.exists()) {
+            System.out.println("No orders found.");
+            return;
+        }
+        
+        System.out.println("\n--- All Orders ---");
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            int orderCount = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 5) {
+                    orderCount++;
+                    System.out.println("Order ID: " + parts[0]);
+                    System.out.println("Customer: " + parts[1]);
+                    System.out.println("Total Amount: RM " + String.format("%.2f", Double.parseDouble(parts[2])));
+                    System.out.println("Date/Time: " + parts[3]);
+                    System.out.println("Status: " + parts[4]);
+                    System.out.println("----");
+                }
+            }
+            
+            if (orderCount == 0) {
+                System.out.println("No orders found.");
+            } else {
+                System.out.println("Total orders: " + orderCount);
+            }
+        }
+    } catch (IOException e) {
+        System.err.println("Error reading orders: " + e.getMessage());
+    }
+}
+
+// Method to manage order status
+private void manageOrderStatus() {
+    try {
+        File file = new File("../data/Order.txt");
+        if (!file.exists()) {
+            System.out.println("No orders found.");
+            return;
+        }
+        
+        List<Order> orders = new ArrayList<>();
+        
+        // Loading all orders
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length >= 5) {
+                    // Create a temporary order object for display
+                    Order order = new Order(Integer.parseInt(parts[0]), parts[1], new ShoppingCart());
+                    order.setTotalAmount(Double.parseDouble(parts[2])) ;
+                    order.setDatetime(LocalDateTime.parse(parts[3])); 
+                    order.setStatus(OrderStatus.valueOf(parts[4]));
+                    orders.add(order);
+                }
+            }
+        }
+        
+        if (orders.isEmpty()) {
+            System.out.println("No orders found.");
+            return;
+        }
+        
+        // Display orders
+        System.out.println("\n--- Order Status Management ---");
+        for (int i = 0; i < orders.size(); i++) {
+            Order order = orders.get(i);
+            System.out.println((i + 1) + ". Order ID: " + order.getOrderId() + 
+                             " | Customer: " + order.getCustomerName() + 
+                             " | Status: " + order.getStatus() + 
+                             " | Total: RM " + String.format("%.2f", order.getTotalAmount()));
+        }
+        
+        System.out.print("Select order to update (1-" + orders.size() + "), or 0 to cancel: ");
+        int choice = sc.nextInt();
+        sc.nextLine();
+        
+        if (choice > 0 && choice <= orders.size()) {
+            Order selectedOrder = orders.get(choice - 1);
+            
+            System.out.println("\nSelected Order:");
+            System.out.println("Order ID: " + selectedOrder.getOrderId());
+            System.out.println("Customer: " + selectedOrder.getCustomerName());
+            System.out.println("Current Status: " + selectedOrder.getStatus());
+            
+            // Show status options
+            System.out.println("\nAvailable Status Options:");
+            OrderStatus[] statuses = OrderStatus.values();
+            for (int i = 0; i < statuses.length; i++) {
+                System.out.println((i + 1) + ". " + statuses[i].getDisplayName());
+            }
+            
+            System.out.print("Select new status (1-" + statuses.length + "): ");
+            int statusChoice = sc.nextInt();
+            sc.nextLine();
+            
+            if (statusChoice >= 1 && statusChoice <= statuses.length) {
+                OrderStatus newStatus = statuses[statusChoice - 1];
+                selectedOrder.changeStatus(newStatus);
+                
+                // Update the file
+                updateOrderInFile(selectedOrder);
+                System.out.println("Order status updated successfully!");
+            } else {
+                System.out.println("Invalid status choice.");
+            }
+        } else if (choice != 0) {
+            System.out.println("Invalid order selection.");
+        }
+        
+    } catch (IOException e) {
+        System.err.println("Error managing orders: " + e.getMessage());
+    }
+}
+
+// Helper method to update order in file
+private void updateOrderInFile(Order updatedOrder) {
+    try {
+        File file = new File("../data/Order.txt");
+        List<String> lines = new ArrayList<>();
+        
+        // Read all lines and update the specific order
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split("\\|");
+                if (parts.length > 0 && Integer.parseInt(parts[0]) == updatedOrder.getOrderId()) {
+                    // Replace with updated order data
+                    lines.add(updatedOrder.toFileString());
+                } else {
+                    // Keep other orders unchanged
+                    lines.add(line);
+                }
+            }
+        }
+        
+        // Write all lines back to file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            for (String line : lines) {
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+        
+    } catch (IOException e) {
+        System.err.println("Error updating order file: " + e.getMessage());
+    }
+}
     public void browseProducts() {
         File file = new File("../data/product.txt");
 
