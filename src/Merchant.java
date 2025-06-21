@@ -26,7 +26,7 @@ public class Merchant extends User {    // Inheritance
 
         String newProdID = product.getProdID().trim();
 
-        File file = new File("product.txt");
+        File file = new File("../data/product.txt");
         if (file.exists()) {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -52,7 +52,7 @@ public class Merchant extends User {    // Inheritance
     }
 
     public void deleteProduct(String productId) {
-        File inputFile = new File("product.txt");
+        File inputFile = new File("../data/product.txt");
         List<String> updatedLines = new ArrayList<>();
         boolean found = false;
 
