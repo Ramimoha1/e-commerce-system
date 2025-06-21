@@ -1,44 +1,59 @@
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class Order {
     private String orderId;
     private String customerId;
-    private ShoppingCart cart;  // Composition
+    private String[] productIds;    // Regular Array
+    private int[] quantities;       
+    private double[] prices;       
     private double totalAmount;
     private LocalDateTime datetime;
     private String status;
+    private int itemCount;
 
-    // Constructor
-    public Order(String orderId, String customerId, ShoppingCart cart) {
+    // Constructor (fixed max items)
+    public Order(String orderId, String customerId, int maxItems) {
         if (orderId == null || orderId.trim().isEmpty()) {
             throw new IllegalArgumentException("Order ID cannot be null or empty.");
         }
         if (customerId == null || customerId.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer ID cannot be null or empty.");
         }
-        if (cart == null) {
-            throw new IllegalArgumentException("ShoppingCart cannot be null.");
-        }
 
         this.orderId = orderId;
         this.customerId = customerId;
-        this.cart = cart;
-        this.totalAmount = cart.calculateTotal();
+        this.productIds = new String[maxItems];
+        this.quantities = new int[maxItems];
+        this.prices = new double[maxItems];
+        this.itemCount = 0;
+        this.totalAmount = 0;
         this.datetime = LocalDateTime.now();
         this.status = "Pending";
     }
 
+    // Add item to order
+    public void addItem(String productId, int quantity, double price) {
+        if (itemCount >= productIds.length) {
+            System.out.println("Order is full.");
+            return;
+        }
+        productIds[itemCount] = productId;
+        quantities[itemCount] = quantity;
+        prices[itemCount] = price;
+        totalAmount += price * quantity;
+        itemCount++;
+    }
 
     // Change order status
     public void changeStatus(String newStatus) {
-        List<String> allowedStatuses = List.of("Pending", "Paid", "Cancelled");
-
-        if (allowedStatuses.contains(newStatus)) {
-            this.status = newStatus;
-        } else {
-            System.out.println("Invalid status: " + newStatus);
+        String[] allowedStatuses = {"Pending", "Paid", "Cancelled"};
+        for (String statusOption : allowedStatuses) {
+            if (statusOption.equals(newStatus)) {
+                this.status = newStatus;
+                return;
+            }
         }
+        System.out.println("Invalid status: " + newStatus);
     }
 
     // Display order summary
@@ -48,39 +63,30 @@ public class Order {
         System.out.println("Customer ID: " + customerId);
         System.out.println("Date       : " + datetime);
         System.out.println("Status     : " + status);
-        System.out.println("--- Cart Items ---");
-        cart.viewCart();  // This prints items from ShoppingCart
+        System.out.println("--- Ordered Items ---");
+        for (int i = 0; i < itemCount; i++) {
+            System.out.printf("Product: %s | Quantity: %d | Price: RM %.2f%n", 
+                productIds[i], quantities[i], prices[i]);
+        }
         System.out.printf("Total      : RM %.2f%n", totalAmount);
     }
 
     // Convert to string for saving to file
     public String toFileString() {
-        return orderId + "," + customerId + "," + totalAmount + "," + datetime + "," + status;
-    }
+        StringBuilder sb = new StringBuilder();
+        sb.append(orderId).append(",").append(customerId).append(",")
+          .append(totalAmount).append(",").append(datetime).append(",")
+          .append(status);
 
-    // Create Order from file string – not implemented yet
-    public static Order fromFileString(String fileLine) {
-        try {
-            String[] parts = fileLine.split(",", 5);
-            String orderId = parts[0];
-            String customerId = parts[1];
-            double totalAmount = Double.parseDouble(parts[2]);
-            LocalDateTime datetime = LocalDateTime.parse(parts[3]);
-            String status = parts[4];
-
-            Order order = new Order(orderId, customerId, new ShoppingCart()); 
-            order.totalAmount = totalAmount;
-            order.datetime = datetime;
-            order.status = status;
-
-            return order;
-        } catch (Exception e) {
-            System.out.println("Error reading order from file: " + e.getMessage());
-            return null;
+        for (int i = 0; i < itemCount; i++) {
+            sb.append(",").append(productIds[i]).append(":")
+              .append(quantities[i]).append(":").append(prices[i]);
         }
+
+        return sb.toString();
     }
 
-    // Getters 
+    // Getters
     public String getOrderId() {
         return orderId;
     }
@@ -97,7 +103,21 @@ public class Order {
         return datetime;
     }
 
-    public ShoppingCart getCart() {
-        return cart;
+    public int getItemCount() {
+        return itemCount;
+    }
+
+    public String[] getProductIds() {
+        return productIds;
+    }
+
+    public int[] getQuantities() {
+        return quantities;
+    }
+
+    public double[] getPrices() {
+        return prices;
     }
 }
+
+
