@@ -11,6 +11,13 @@ public class Merchant extends User {    // Inheritance
         this.storeName = "Default Store";
     }
 
+    // Polymorphism
+    @Override
+    public void viewDashboard() {
+        System.out.println("Welcome, Merchant " + name);
+        viewInventory();
+    }
+
     public boolean addProduct(Product product) {
         if (product == null || product.getProdID() == null || product.getProdID().trim().isEmpty()) {
             System.out.println("Cannot add product: invalid product.");
@@ -116,3 +123,4 @@ public class Merchant extends User {    // Inheritance
         this.storeName = newStoreName;
     }
 }
+
