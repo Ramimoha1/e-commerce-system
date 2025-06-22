@@ -1,7 +1,3 @@
-Customer;chuahhw;123;Chuah Hui Wen;Bayan Lepas, Penang
-Merchant;veggieFresh;veggie;VeggieFresh Shop;11, Jalan Molek 2/1, 81100, Johor Bahru
-Customer;Rami;imaR2005;Rami;greenfield
-Merchant;khalid;imaR2005;kalid;kk
-Merchant;Ramio;imaR2005;Rami;iskander putri
-Customer;chuah;iaaa;chuah;p
-Customer;john;ima;john;skudai
+Customer;Mohamed;ima;Mohamed;12|skudai
+Customer;mhmd;1234;mhmd;1234|johor
+Merchant;rami';imar;rami;111|3232
