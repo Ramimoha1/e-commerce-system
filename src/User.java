@@ -1,15 +1,12 @@
-import java.io.FileWriter;
-import java.io.PrintWriter;
-
 // Declared as abstract because never want to create a plain User object directly, only Customer or Merchant
 public abstract class User {
     // protected makes these fields accessible to subclasses
     protected String username;
     protected String password;
     protected String name;
-    protected String address;
+    protected String[] address;   // regular array of size 2, index 0 - postal code, index 1 - location
 
-    public User(String username, String password, String name, String address) {
+    public User(String username, String password, String name, String[] address) {
         this.username = username;
         this.password = password;
         this.name = name;
@@ -24,15 +21,16 @@ public abstract class User {
         System.out.println(username + " logged out.");
     }
 
-    public static User register(String uname, String pass, String name, String address, String role) {
+    public static User register(String uname, String pass, String name, String[] address, String role) {
         // Validate all required fields
+        String fullAddress = address[0] + '|' + address[1];
         if (uname == null || uname.trim().isEmpty())
             throw new IllegalArgumentException("Username cannot be null or empty.");
         if (pass == null || pass.trim().isEmpty())
             throw new IllegalArgumentException("Password cannot be null or empty.");
         if (name == null || name.trim().isEmpty())
             throw new IllegalArgumentException("Name cannot be null or empty.");
-        if (address == null || address.trim().isEmpty())
+        if (fullAddress == null || fullAddress.trim().isEmpty())
             throw new IllegalArgumentException("Address cannot be null or empty.");
         if (role == null || role.trim().isEmpty())
             throw new IllegalArgumentException("Role cannot be null or empty.");
@@ -48,7 +46,8 @@ public abstract class User {
     }
 
     public String toFileString() {
-        return this.getClass().getSimpleName() + ";" + username + ";" + password + ";" + name + ";" + address;
+        String addressStr = address[0] + "|" + address[1];
+        return this.getClass().getSimpleName() + ";" + username + ";" + password + ";" + name + ";" + addressStr;
     }
 
     public static User fromFileString(String line) {
@@ -63,12 +62,12 @@ public abstract class User {
         String uname = parts[1];
         String pass = parts[2];
         String name = parts[3];
-        String address = parts[4];
+        String[] addressnew = parts[4].split("\\|");
 
         if (role.equalsIgnoreCase("Customer")) {
-            return new Customer(uname, pass, name, address);
+            return new Customer(uname, pass, name, addressnew);
         } else if (role.equalsIgnoreCase("Merchant")) {
-            return new Merchant(uname, pass, name, address);
+            return new Merchant(uname, pass, name, addressnew);
         }
 
         return null; // Unknown role
@@ -89,14 +88,15 @@ public abstract class User {
     }
 
     public String getAddress() {
-        return address;
+        String newaddress = address[0] + " , " + address[1];
+        return newaddress;
     }
 
     public void setName(String name) {
         this.name = name;
     }
-    
-    public void setAddress(String address) {
+
+    public void setAddress(String[] address) {
         this.address = address;
     }
 
@@ -104,4 +104,3 @@ public abstract class User {
         this.password = newPassword;
     }
 }
-

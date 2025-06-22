@@ -7,17 +7,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.io.File;
-import java.io.FileReader;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.time.LocalDateTime;
 
 public class ECommerceSystem {
     private List<User> users;
     private List<Product> products;
-    private List<Product> orders;
     private User currentUser;
 
     public Scanner sc;
@@ -253,11 +248,14 @@ public class ECommerceSystem {
             System.out.print("Enter password: ");
             pass = sc.nextLine();
         }
-
+        String[] address = new String[2];
         System.out.print("Enter name: ");
         String name = sc.nextLine();
-        System.out.print("Enter address: ");
-        String address = sc.nextLine();
+        System.out.print("Enter postal code: ");
+        
+        address[0] = sc.nextLine();
+        System.out.print("Enter home address:  ");
+        address[1] = sc.nextLine();
 
         User newUser = User.register(uname, pass, name, address, role);
         if (newUser != null) {
@@ -445,8 +443,11 @@ public class ECommerceSystem {
                 break;
             case 5:
                 clearTerminal();
-                System.out.print("Enter new address: ");
-                String newAddr = sc.nextLine();
+                String[] newAddr = new String[2];
+                System.out.print("Enter new Postal code: ");
+                 newAddr[0] = sc.nextLine();
+                System.out.print("Enter new address location: ");
+                 newAddr[1] = sc.nextLine();
                 customer.updateAddress(newAddr);
                 System.out.println("Address updated.");
                 System.out.println("Press any key to continue...");
@@ -716,8 +717,11 @@ private void saveOrderToDatabase(Order order) {
                 break;
             case 6:
                 clearTerminal();
-                System.out.print("Enter new store address: ");
-                String newAddr = sc.nextLine();
+                String []newAddr = new String[2];
+                System.out.print("Enter new postal code: ");
+                 newAddr[0] = sc.nextLine();
+                System.out.print("Enter new address location: ");
+                 newAddr[1] = sc.nextLine();
                 merchant.setAddress(newAddr);
                 System.out.println("Address updated.");
                 System.out.println("Press any key to continue...");

@@ -2,10 +2,11 @@
 public class Customer extends User {    // Inheritance
     private ShoppingCart cart;  // Composition
 
-    public Customer(String username, String password, String name, String address) {
-        super(username, password, name, address);
-        this.cart = new ShoppingCart();
+    public Customer(String username, String password, String name, String[] address) {
+    super(username, password, name, address);
+    this.cart = new ShoppingCart();
     }
+        
 
     // Polymorphism
     @Override
@@ -35,7 +36,7 @@ public class Customer extends User {    // Inheritance
     }
 
     // Change customer's delivery address
-    public void updateAddress(String newAddress) {
+    public void updateAddress(String[] newAddress) {
         this.address = newAddress;
     }
 
